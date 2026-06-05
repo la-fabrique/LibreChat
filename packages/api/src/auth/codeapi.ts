@@ -16,7 +16,6 @@ interface CodeApiUserContext {
   orgId?: string;
   serviceId?: string;
   chcUserId?: string;
-  idOnTheSource?: string;
   planId?: string;
   subscription?: {
     planId?: string;
@@ -262,7 +261,7 @@ function buildClaims(req: ServerRequest, config: SigningConfig, now: number): Co
   const principalSource = resolvePrincipalSource(req);
   const orgId = stringifyClaimValue(user.orgId);
   const serviceId = stringifyClaimValue(user.serviceId);
-  const chcUserId = stringifyClaimValue(user.chcUserId) ?? stringifyClaimValue(user.idOnTheSource);
+  const chcUserId = stringifyClaimValue(user.chcUserId);
   const planId = stringifyClaimValue(user.planId) ?? stringifyClaimValue(user.subscription?.planId);
   const authContextHash = canonicalContextHash({
     userId,

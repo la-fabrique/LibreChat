@@ -34,7 +34,6 @@ const SUPERSEDED_INDEXES: Record<string, string[]> = {
   conversationtags: ['tag_1_user_1'],
   mcpservers: ['serverName_1'],
   files: ['filename_1_conversationId_1_context_1'],
-  groups: ['idOnTheSource_1_source_1'],
 };
 
 interface MigrationResult {

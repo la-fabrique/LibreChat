@@ -422,7 +422,6 @@ async function resolveUser(
     email: getOpenIdEmail(payload, 'remoteAgentAuth'),
     openidId: payload.sub,
     openidIssuer: oidcConfig.issuer,
-    idOnTheSource: payload['oid'] as string | undefined,
     strategyName: 'remoteAgentAuth',
   });
 

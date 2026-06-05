@@ -15,7 +15,6 @@ export interface Principal {
   email?: string;
   avatar?: string;
   source?: string;
-  idOnTheSource?: string;
   accessRoleId: string;
   isImplicit?: boolean;
 }
@@ -101,8 +100,6 @@ export async function enrichRemoteAgentPrincipals(
         email: userInfo.email as string,
         avatar: userInfo.avatar as string,
         source: 'local',
-        idOnTheSource:
-          (userInfo.idOnTheSource as string) || (userInfo._id as Types.ObjectId).toString(),
         accessRoleId: AccessRoleIds.REMOTE_AGENT_OWNER,
         isImplicit: true,
       });

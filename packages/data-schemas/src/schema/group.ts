@@ -29,17 +29,8 @@ const groupSchema = new Schema<IGroup>(
     ],
     source: {
       type: String,
-      enum: ['local', 'entra'],
+      enum: ['local'],
       default: 'local',
-    },
-    /** External ID (e.g., Entra ID) */
-    idOnTheSource: {
-      type: String,
-      sparse: true,
-      index: true,
-      required: function (this: IGroup) {
-        return this.source !== 'local';
-      },
     },
     tenantId: {
       type: String,
@@ -49,13 +40,6 @@ const groupSchema = new Schema<IGroup>(
   { timestamps: true },
 );
 
-groupSchema.index(
-  { idOnTheSource: 1, source: 1, tenantId: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { idOnTheSource: { $exists: true } },
-  },
-);
 groupSchema.index({ memberIds: 1 });
 
 export default groupSchema;

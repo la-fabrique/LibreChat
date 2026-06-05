@@ -173,45 +173,21 @@ export function createAdminGroupsHandlers(deps: AdminGroupsDeps) {
           .status(400)
           .json({ error: `avatar must not exceed ${MAX_AVATAR_LENGTH} characters` });
       }
-      if (body.idOnTheSource && body.idOnTheSource.length > MAX_EXTERNAL_ID_LENGTH) {
-        return res
-          .status(400)
-          .json({ error: `idOnTheSource must not exceed ${MAX_EXTERNAL_ID_LENGTH} characters` });
-      }
-
       const rawIds = Array.isArray(body.memberIds) ? body.memberIds : [];
       if (rawIds.length > MAX_CREATE_MEMBER_IDS) {
         return res
           .status(400)
           .json({ error: `memberIds must not exceed ${MAX_CREATE_MEMBER_IDS} entries` });
       }
-      let memberIds = rawIds;
-      const objectIds = rawIds.filter(isValidObjectIdString);
-      if (objectIds.length > 0) {
-        const users = await findUsers({ _id: { $in: objectIds } }, 'idOnTheSource');
-        const idMap = new Map<string, string>();
-        for (const user of users) {
-          const uid = user._id?.toString() ?? '';
-          idMap.set(uid, user.idOnTheSource || uid);
-        }
-        const unmapped = objectIds.filter((oid) => !idMap.has(oid));
-        if (unmapped.length > 0) {
-          logger.warn(
-            '[adminGroups] createGroup: memberIds contain unknown user ObjectIds:',
-            unmapped,
-          );
-        }
-        memberIds = rawIds.map((id) => idMap.get(id) || id);
-      }
+      const memberIds = rawIds.filter(isValidObjectIdString);
 
       const group = await createGroup({
         name: body.name.trim(),
         description: body.description,
         email: body.email,
         avatar: body.avatar,
-        source: body.source || 'local',
+        source: 'local',
         memberIds,
-        ...(body.idOnTheSource ? { idOnTheSource: body.idOnTheSource } : {}),
       });
       return res.status(201).json({ group });
     } catch (error) {
@@ -351,17 +327,13 @@ export function createAdminGroupsHandlers(deps: AdminGroupsDeps) {
       const memberIds = allMemberIds.slice(offset, offset + limit);
 
       const validObjectIds = memberIds.filter(isValidObjectIdString);
-      const conditions: FilterQuery<IUser>[] = [{ idOnTheSource: { $in: memberIds } }];
-      if (validObjectIds.length > 0) {
-        conditions.push({ _id: { $in: validObjectIds } });
-      }
-      const users = await findUsers({ $or: conditions }, 'name email avatar idOnTheSource');
+      const users =
+        validObjectIds.length > 0
+          ? await findUsers({ _id: { $in: validObjectIds } }, 'name email avatar')
+          : [];
 
       const userMap = new Map<string, IUser>();
       for (const user of users) {
-        if (user.idOnTheSource) {
-          userMap.set(user.idOnTheSource, user);
-        }
         if (user._id) {
           userMap.set(user._id.toString(), user);
         }

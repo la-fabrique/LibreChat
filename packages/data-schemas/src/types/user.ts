@@ -56,8 +56,6 @@ export interface IUser extends Document {
   skillStates?: Record<string, boolean>;
   createdAt?: Date;
   updatedAt?: Date;
-  /** Field for external source identification (for consistency with TPrincipal schema) */
-  idOnTheSource?: string;
   tenantId?: string;
   federatedTokens?: OIDCTokens;
   openidTokens?: OIDCTokens;
@@ -122,6 +120,7 @@ export interface UserFilterOptions extends CursorPaginationParams {
   discordId?: string;
   appleId?: string;
   // Date filters
+
   createdAfter?: string;
   createdBefore?: string;
 }

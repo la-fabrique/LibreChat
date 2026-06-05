@@ -18,7 +18,7 @@ export type OpenIdIssuerSource = {
   serverMetadata?: () => { issuer?: string } | undefined;
 };
 
-type OpenIdLookupField = 'openidId' | 'idOnTheSource';
+type OpenIdLookupField = 'openidId';
 type OpenIdUserResolution = { user: IUser | null; error: string | null; migration: boolean };
 
 const OPENID_DISCOVERY_PATH = '/.well-known/openid-configuration';
@@ -111,19 +111,11 @@ export function getIssuerBoundConditions(
 
 function getPrimaryLookupConditions(
   openidId: string | undefined,
-  idOnTheSource: string | undefined,
   openidIssuer: string | undefined,
 ): FilterQuery<IUser>[] {
-  const exactConditions = [
-    getIssuerExactCondition('openidId', openidId, openidIssuer),
-    getIssuerExactCondition('idOnTheSource', idOnTheSource, openidIssuer),
-  ].filter((condition): condition is FilterQuery<IUser> => condition != null);
-
-  return [
-    ...exactConditions,
-    ...getLegacyIssuerConditions('openidId', openidId, openidIssuer),
-    ...getLegacyIssuerConditions('idOnTheSource', idOnTheSource, openidIssuer),
-  ];
+  const exactCondition = getIssuerExactCondition('openidId', openidId, openidIssuer);
+  if (!exactCondition) return [];
+  return [exactCondition, ...getLegacyIssuerConditions('openidId', openidId, openidIssuer)];
 }
 
 async function findFirstOpenIdUser(
@@ -211,14 +203,12 @@ export async function findOpenIDUser({
   findUser,
   email,
   openidIssuer,
-  idOnTheSource,
   strategyName = 'openid',
 }: {
   openidId: string;
   findUser: UserMethods['findUser'];
   email?: string;
   openidIssuer?: string;
-  idOnTheSource?: string;
   strategyName?: string;
 }): Promise<OpenIdUserResolution> {
   const lookupStartedAt = isMetricsConfigured() ? process.hrtime.bigint() : null;
@@ -234,7 +224,7 @@ export async function findOpenIDUser({
 
   try {
     const normalizedIssuer = normalizeOpenIdIssuer(openidIssuer);
-    const primaryConditions = getPrimaryLookupConditions(openidId, idOnTheSource, normalizedIssuer);
+    const primaryConditions = getPrimaryLookupConditions(openidId, normalizedIssuer);
 
     let user: IUser | null = null;
     if (primaryConditions.length > 0) {

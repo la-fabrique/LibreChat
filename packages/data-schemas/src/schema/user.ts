@@ -153,11 +153,6 @@ const userSchema = new Schema<IUser>(
       of: Boolean,
       default: () => new Map(),
     },
-    /** Field for external source identification (for consistency with TPrincipal schema) */
-    idOnTheSource: {
-      type: String,
-      sparse: true,
-    },
     tenantId: {
       type: String,
       index: true,
@@ -168,7 +163,6 @@ const userSchema = new Schema<IUser>(
 
 userSchema.index({ email: 1, tenantId: 1 }, { unique: true });
 userSchema.index({ role: 1, tenantId: 1 });
-userSchema.index({ idOnTheSource: 1, openidIssuer: 1, tenantId: 1 });
 
 const oAuthIdFields = [
   'googleId',

@@ -120,45 +120,11 @@ describe('findOpenIDUser', () => {
       expect(recordOpenIDUserLookup).toHaveBeenCalledWith('found', expect.any(Number));
     });
 
-    it('should find user by idOnTheSource', async () => {
-      const mockUser: IUser = {
-        _id: newId(),
-        provider: 'openid',
-        idOnTheSource: 'source_123',
-        email: 'user@example.com',
-        username: 'testuser',
-      } as IUser;
-
-      mockFindUser.mockResolvedValueOnce(null).mockResolvedValueOnce(mockUser);
-
-      const result = await findOpenIDUser({
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-        findUser: mockFindUser,
-        idOnTheSource: 'source_123',
-      });
-
-      expect(mockFindUser).toHaveBeenNthCalledWith(1, {
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-      });
-      expect(mockFindUser).toHaveBeenNthCalledWith(2, {
-        idOnTheSource: 'source_123',
-        openidIssuer: issuer,
-      });
-      expect(result).toEqual({
-        user: mockUser,
-        error: null,
-        migration: false,
-      });
-    });
-
-    it('should find user by both openidId and idOnTheSource', async () => {
+    it('should find user by openidId', async () => {
       const mockUser: IUser = {
         _id: newId(),
         provider: 'openid',
         openidId: 'openid_123',
-        idOnTheSource: 'source_123',
         openidIssuer: issuer,
         email: 'user@example.com',
         username: 'testuser',
@@ -170,7 +136,6 @@ describe('findOpenIDUser', () => {
         openidId: 'openid_123',
         openidIssuer: issuer,
         findUser: mockFindUser,
-        idOnTheSource: 'source_123',
         email: 'user@example.com',
       });
 
@@ -287,7 +252,6 @@ describe('findOpenIDUser', () => {
 
       const result = await findOpenIDUser({
         openidId: 'openid_123',
-        idOnTheSource: 'source_123',
         findUser: mockFindUser,
         email: 'user@example.com',
       });
@@ -670,39 +634,6 @@ describe('findOpenIDUser', () => {
       });
     });
 
-    it('should handle empty string idOnTheSource', async () => {
-      mockFindUser.mockResolvedValueOnce(null);
-
-      const result = await findOpenIDUser({
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-        findUser: mockFindUser,
-        idOnTheSource: '',
-      });
-
-      expect(mockFindUser).toHaveBeenCalledWith({
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-      });
-      expect(result).toEqual({
-        user: null,
-        error: null,
-        migration: false,
-      });
-    });
-
-    it('should handle both openidId and idOnTheSource as empty strings', async () => {
-      await findOpenIDUser({
-        openidId: '',
-        findUser: mockFindUser,
-        idOnTheSource: '',
-        email: 'user@example.com',
-      });
-
-      // Should skip primary search and go directly to email search
-      expect(mockFindUser).toHaveBeenCalledTimes(1);
-      expect(mockFindUser).toHaveBeenCalledWith({ email: 'user@example.com' });
-    });
 
     it('should pass email to findUser for case-insensitive lookup (findUser handles normalization)', async () => {
       const mockUser: IUser = {
@@ -814,7 +745,6 @@ describe('findOpenIDUser Mongo compatibility', () => {
         provider: 'openid',
         openidId: `filler-sub-${index}`,
         openidIssuer: issuer,
-        idOnTheSource: `filler-oid-${index}`,
       })),
     );
   }
@@ -872,13 +802,11 @@ describe('findOpenIDUser Mongo compatibility', () => {
       provider: 'openid',
       openidId: 'target-sub',
       openidIssuer: issuer,
-      idOnTheSource: 'target-oid',
     });
 
     const { result, filters } = await captureFindFilters(() =>
       findOpenIDUser({
         openidId: 'target-sub',
-        idOnTheSource: 'target-oid',
         openidIssuer: issuer,
         findUser: methods.findUser,
       }),
@@ -897,13 +825,11 @@ describe('findOpenIDUser Mongo compatibility', () => {
       email: 'legacy@example.com',
       provider: 'openid',
       openidId: 'legacy-sub',
-      idOnTheSource: 'legacy-oid',
     });
 
     const { result, filters } = await captureFindFilters(() =>
       findOpenIDUser({
         openidId: 'legacy-sub',
-        idOnTheSource: 'legacy-oid',
         openidIssuer: issuer,
         findUser: methods.findUser,
       }),
@@ -913,7 +839,6 @@ describe('findOpenIDUser Mongo compatibility', () => {
     expect(result.migration).toBe(true);
     expect(filters).toEqual([
       { openidId: 'legacy-sub', openidIssuer: issuer },
-      { idOnTheSource: 'legacy-oid', openidIssuer: issuer },
       { openidId: 'legacy-sub', openidIssuer: { $exists: false } },
     ]);
   });

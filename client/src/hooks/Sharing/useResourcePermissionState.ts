@@ -44,7 +44,6 @@ export const useResourcePermissionState = (
       avatar: principal.avatar,
       description: principal.description,
       accessRoleId: principal.accessRoleId,
-      idOnTheSource: principal.idOnTheSource,
     })) || [];
 
   const currentIsPublic = permissionsData?.public ?? false;

@@ -261,13 +261,11 @@ describe('createAdminGroupsHandlers', () => {
       );
     });
 
-    it('normalizes memberIds to idOnTheSource values', async () => {
+    it('passes valid ObjectId memberIds to createGroup', async () => {
       const userId = new Types.ObjectId().toString();
-      const user = { _id: new Types.ObjectId(userId), idOnTheSource: 'ext-norm-1' } as IUser;
       const group = mockGroup();
       const deps = createDeps({
         createGroup: jest.fn().mockResolvedValue(group),
-        findUsers: jest.fn().mockResolvedValue([user]),
       });
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status } = createReqRes({
@@ -277,47 +275,27 @@ describe('createAdminGroupsHandlers', () => {
       await handlers.createGroup(req, res);
 
       expect(status).toHaveBeenCalledWith(201);
-      expect(deps.findUsers).toHaveBeenCalledWith({ _id: { $in: [userId] } }, 'idOnTheSource');
       expect(deps.createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ memberIds: ['ext-norm-1'] }),
+        expect.objectContaining({ memberIds: [userId] }),
       );
     });
 
-    it('logs warning when memberIds contain non-existent user ObjectIds', async () => {
-      const { logger } = jest.requireMock('@librechat/data-schemas');
-      const unknownId = new Types.ObjectId().toString();
+    it('filters out non-ObjectId memberIds', async () => {
+      const validId = new Types.ObjectId().toString();
       const group = mockGroup();
       const deps = createDeps({
         createGroup: jest.fn().mockResolvedValue(group),
-        findUsers: jest.fn().mockResolvedValue([]),
       });
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status } = createReqRes({
-        body: { name: 'With Unknown', memberIds: [unknownId] },
-      });
-
-      await handlers.createGroup(req, res);
-
-      expect(status).toHaveBeenCalledWith(201);
-      expect(logger.warn).toHaveBeenCalledWith(
-        '[adminGroups] createGroup: memberIds contain unknown user ObjectIds:',
-        [unknownId],
-      );
-    });
-
-    it('passes idOnTheSource when provided', async () => {
-      const group = mockGroup();
-      const deps = createDeps({ createGroup: jest.fn().mockResolvedValue(group) });
-      const handlers = createAdminGroupsHandlers(deps);
-      const { req, res, status } = createReqRes({
-        body: { name: 'Entra Group', source: 'entra', idOnTheSource: 'ent-abc-123' },
+        body: { name: 'Mixed Members', memberIds: [validId, 'not-an-objectid'] },
       });
 
       await handlers.createGroup(req, res);
 
       expect(status).toHaveBeenCalledWith(201);
       expect(deps.createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ idOnTheSource: 'ent-abc-123', source: 'entra' }),
+        expect.objectContaining({ memberIds: [validId] }),
       );
     });
 
@@ -393,19 +371,16 @@ describe('createAdminGroupsHandlers', () => {
       expect(deps.createGroup).not.toHaveBeenCalled();
     });
 
-    it('returns 400 when idOnTheSource exceeds max length', async () => {
+    it('returns 400 when name exceeds max length (sanity check)', async () => {
       const deps = createDeps();
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status, json } = createReqRes({
-        body: { name: 'Valid', idOnTheSource: 'x'.repeat(501) },
+        body: { name: 'x'.repeat(256) },
       });
 
       await handlers.createGroup(req, res);
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(json).toHaveBeenCalledWith({
-        error: 'idOnTheSource must not exceed 500 characters',
-      });
       expect(deps.createGroup).not.toHaveBeenCalled();
     });
 
@@ -851,9 +826,9 @@ describe('createAdminGroupsHandlers', () => {
       expect(deps.findUsers).not.toHaveBeenCalled();
     });
 
-    it('batches member lookup with $or query', async () => {
-      const user = mockUser({ idOnTheSource: 'ext-123' });
-      const group = mockGroup({ memberIds: [validUserId, 'ext-123'] });
+    it('looks up members by _id', async () => {
+      const user = mockUser();
+      const group = mockGroup({ memberIds: [validUserId] });
       const deps = createDeps({
         findGroupById: jest.fn().mockResolvedValue(group),
         findUsers: jest.fn().mockResolvedValue([user]),
@@ -864,21 +839,16 @@ describe('createAdminGroupsHandlers', () => {
       await handlers.getGroupMembers(req, res);
 
       expect(deps.findUsers).toHaveBeenCalledWith(
-        {
-          $or: [
-            { idOnTheSource: { $in: [validUserId, 'ext-123'] } },
-            { _id: { $in: [validUserId] } },
-          ],
-        },
-        'name email avatar idOnTheSource',
+        { _id: { $in: [validUserId] } },
+        'name email avatar',
       );
       expect(status).toHaveBeenCalledWith(200);
       const members = json.mock.calls[0][0].members;
       expect(members).toHaveLength(1);
     });
 
-    it('skips _id condition when no valid ObjectIds in memberIds', async () => {
-      const group = mockGroup({ memberIds: ['ext-1', 'ext-2'] });
+    it('skips findUsers when no valid ObjectIds in memberIds', async () => {
+      const group = mockGroup({ memberIds: ['not-an-objectid'] });
       const deps = createDeps({
         findGroupById: jest.fn().mockResolvedValue(group),
         findUsers: jest.fn().mockResolvedValue([]),
@@ -888,10 +858,7 @@ describe('createAdminGroupsHandlers', () => {
 
       await handlers.getGroupMembers(req, res);
 
-      expect(deps.findUsers).toHaveBeenCalledWith(
-        { $or: [{ idOnTheSource: { $in: ['ext-1', 'ext-2'] } }] },
-        'name email avatar idOnTheSource',
-      );
+      expect(deps.findUsers).not.toHaveBeenCalled();
     });
 
     it('falls back to memberId when user not found', async () => {
@@ -911,7 +878,7 @@ describe('createAdminGroupsHandlers', () => {
     });
 
     it('deduplicates when identical memberId appears twice', async () => {
-      const user = mockUser({ idOnTheSource: validUserId });
+      const user = mockUser();
       const group = mockGroup({ memberIds: [validUserId, validUserId] });
       const deps = createDeps({
         findGroupById: jest.fn().mockResolvedValue(group),
@@ -927,21 +894,6 @@ describe('createAdminGroupsHandlers', () => {
       expect(result.total).toBe(1);
     });
 
-    it('deduplicates when objectId and idOnTheSource both present for same user', async () => {
-      const extId = 'ext-dedup-123';
-      const user = mockUser({ idOnTheSource: extId });
-      const group = mockGroup({ memberIds: [validUserId, extId] });
-      const deps = createDeps({
-        findGroupById: jest.fn().mockResolvedValue(group),
-        findUsers: jest.fn().mockResolvedValue([user]),
-      });
-      const handlers = createAdminGroupsHandlers(deps);
-      const { req, res, json } = createReqRes({ params: { id: validId } });
-
-      await handlers.getGroupMembers(req, res);
-
-      expect(json.mock.calls[0][0].members).toHaveLength(1);
-    });
 
     it('reports deduplicated total for duplicate memberIds', async () => {
       const group = mockGroup({ memberIds: ['m1', 'm2', 'm1', 'm3', 'm2'] });
