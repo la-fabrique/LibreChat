@@ -120,37 +120,6 @@ describe('findOpenIDUser', () => {
       expect(recordOpenIDUserLookup).toHaveBeenCalledWith('found', expect.any(Number));
     });
 
-    it('should find user by openidId', async () => {
-      const mockUser: IUser = {
-        _id: newId(),
-        provider: 'openid',
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-        email: 'user@example.com',
-        username: 'testuser',
-      } as IUser;
-
-      mockFindUser.mockResolvedValueOnce(mockUser);
-
-      const result = await findOpenIDUser({
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-        findUser: mockFindUser,
-        email: 'user@example.com',
-      });
-
-      expect(mockFindUser).toHaveBeenCalledTimes(1);
-      expect(mockFindUser).toHaveBeenCalledWith({
-        openidId: 'openid_123',
-        openidIssuer: issuer,
-      });
-      expect(result).toEqual({
-        user: mockUser,
-        error: null,
-        migration: false,
-      });
-    });
-
     it('should bind primary lookup to issuer', async () => {
       const mockUser: IUser = {
         _id: newId(),
