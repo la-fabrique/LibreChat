@@ -634,7 +634,6 @@ describe('findOpenIDUser', () => {
       });
     });
 
-
     it('should pass email to findUser for case-insensitive lookup (findUser handles normalization)', async () => {
       const mockUser: IUser = {
         _id: newId(),

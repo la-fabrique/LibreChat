@@ -316,7 +316,6 @@ function convertToUsername(input, defaultValue = '') {
   return defaultValue;
 }
 
-
 /**
  * Resolve the source object (decoded token or userinfo) for a role check
  * based on the configured token kind. Throws on invalid configuration so
@@ -346,13 +345,7 @@ function getRoleSource(kind, label, tokenset, userinfo) {
 /**
  * Applies generic OpenID role sync to the request-local user before the existing final update.
  */
-async function applyOpenIdRoleSync({
-  user,
-  username,
-  tokenset,
-  claims,
-  userinfo,
-}) {
+async function applyOpenIdRoleSync({ user, username, tokenset, claims, userinfo }) {
   const options = getOpenIdRoleSyncOptions();
   if (!options.enabled) {
     return;

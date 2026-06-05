@@ -405,10 +405,7 @@ export function createUserGroupMethods(mongoose: typeof import('mongoose')) {
     return Group.updateMany(filter, update, options || {});
   }
 
-  function buildGroupQuery(filter: {
-    source?: 'local';
-    search?: string;
-  }): FilterQuery<IGroup> {
+  function buildGroupQuery(filter: { source?: 'local'; search?: string }): FilterQuery<IGroup> {
     const query: FilterQuery<IGroup> = {};
     if (filter.source) {
       query.source = filter.source;

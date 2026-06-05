@@ -316,7 +316,6 @@ const ensureGroupPrincipalExists = async function (principal) {
   throw new Error(`Unsupported group principal: missing id`);
 };
 
-
 /**
  * Check if public has a specific permission on a resource
  * @param {Object} params - Parameters for checking public permission

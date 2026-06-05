@@ -894,7 +894,6 @@ describe('createAdminGroupsHandlers', () => {
       expect(result.total).toBe(1);
     });
 
-
     it('reports deduplicated total for duplicate memberIds', async () => {
       const group = mockGroup({ memberIds: ['m1', 'm2', 'm1', 'm3', 'm2'] });
       const deps = createDeps({
