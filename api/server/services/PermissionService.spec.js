@@ -9,7 +9,6 @@ const {
 } = require('librechat-data-provider');
 const {
   bulkUpdateResourcePermissions,
-  syncUserEntraGroupMemberships,
   getEffectivePermissions,
   findAccessibleResources,
   getAvailableRoles,

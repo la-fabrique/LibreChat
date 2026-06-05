@@ -11,7 +11,6 @@ jest.mock('@librechat/data-schemas', () => ({
   createMethods: jest.requireActual('@librechat/data-schemas').createMethods,
 }));
 
-
 jest.mock('~/config', () => ({
   logger: { error: jest.fn() },
 }));

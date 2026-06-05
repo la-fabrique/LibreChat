@@ -4,7 +4,6 @@ import {
   StreamableHTTPOptionsSchema,
 } from 'librechat-data-provider';
 import type { TUser } from 'librechat-data-provider';
-import type { IUser } from '@librechat/data-schemas';
 import { processMCPEnv } from '~/utils/env';
 
 // Helper function to create test user objects

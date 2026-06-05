@@ -409,9 +409,7 @@ describe('createAdminGroupsHandlers', () => {
       await handlers.createGroup(req, res);
 
       expect(deps.findUsers).not.toHaveBeenCalled();
-      expect(deps.createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ memberIds: [] }),
-      );
+      expect(deps.createGroup).toHaveBeenCalledWith(expect.objectContaining({ memberIds: [] }));
       expect(status).toHaveBeenCalledWith(201);
     });
 

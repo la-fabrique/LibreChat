@@ -809,10 +809,7 @@ describe('setupOpenId', () => {
     });
   });
 
-
   describe('admin role group overage', () => {
-
-
     it('does not attempt overage for admin role when token kind is not id', async () => {
       process.env.OPENID_REQUIRED_ROLE = 'requiredRole';
       process.env.OPENID_REQUIRED_ROLE_PARAMETER_PATH = 'roles';
@@ -835,7 +832,6 @@ describe('setupOpenId', () => {
       expect(undici.fetch).not.toHaveBeenCalled();
       expect(user.role).toBeUndefined();
     });
-
 
     it('denies admin when OPENID_REQUIRED_ROLE is absent and Graph does not contain admin group', async () => {
       delete process.env.OPENID_REQUIRED_ROLE;
@@ -1389,7 +1385,6 @@ describe('setupOpenId', () => {
       expect(user).toBe(false);
       expect(details).toEqual({ message: 'Email domain not allowed' });
     });
-
 
     it('leaves the role unchanged when role-sync group overage cannot be resolved', async () => {
       process.env.OPENID_ROLE_SYNC_CLAIM = 'groups';

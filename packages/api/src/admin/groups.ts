@@ -24,7 +24,6 @@ const MAX_NAME_LENGTH = 255;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_EMAIL_LENGTH = 500;
 const MAX_AVATAR_LENGTH = 2000;
-const MAX_EXTERNAL_ID_LENGTH = 500;
 
 interface GroupIdParams {
   id: string;
