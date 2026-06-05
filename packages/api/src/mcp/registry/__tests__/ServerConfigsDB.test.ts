@@ -974,7 +974,7 @@ describe('ServerConfigsDB', () => {
         const findByIdSpy = jest.spyOn(mongoose.models.User, 'findById');
 
         try {
-          await serverConfigsDB.getAll(userId, 'USER');
+          await serverConfigsDB.getAll(userId);
           expect(findByIdSpy).toHaveBeenCalledTimes(1);
         } finally {
           findByIdSpy.mockRestore();

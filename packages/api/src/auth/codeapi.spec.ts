@@ -173,7 +173,7 @@ describe('Code API JWT minting', () => {
     process.env.OPENID_REUSE_TOKENS = 'true';
     const req = baseRequest({
       provider: 'openid',
-      idOnTheSource: 'chc_user_123',
+      chcUserId: 'chc_user_123',
       refreshToken: 'do-not-forward',
       accessToken: 'do-not-forward',
     });

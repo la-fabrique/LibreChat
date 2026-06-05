@@ -100,19 +100,19 @@ describe('createAdminGroupsHandlers', () => {
       const deps = createDeps();
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res } = createReqRes({
-        query: { source: 'entra', search: 'engineering', limit: '20', offset: '10' },
+        query: { source: 'local', search: 'engineering', limit: '20', offset: '10' },
       });
 
       await handlers.listGroups(req, res);
 
       expect(deps.listGroups).toHaveBeenCalledWith({
-        source: 'entra',
+        source: 'local',
         search: 'engineering',
         limit: 20,
         offset: 10,
       });
       expect(deps.countGroups).toHaveBeenCalledWith({
-        source: 'entra',
+        source: 'local',
         search: 'engineering',
       });
     });
@@ -317,13 +317,13 @@ describe('createAdminGroupsHandlers', () => {
       const deps = createDeps();
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status, json } = createReqRes({
-        body: { name: 'a'.repeat(501) },
+        body: { name: 'a'.repeat(256) },
       });
 
       await handlers.createGroup(req, res);
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(json).toHaveBeenCalledWith({ error: 'name must not exceed 500 characters' });
+      expect(json).toHaveBeenCalledWith({ error: 'name must not exceed 255 characters' });
       expect(deps.createGroup).not.toHaveBeenCalled();
     });
 
@@ -374,7 +374,7 @@ describe('createAdminGroupsHandlers', () => {
     it('returns 400 when name exceeds max length (sanity check)', async () => {
       const deps = createDeps();
       const handlers = createAdminGroupsHandlers(deps);
-      const { req, res, status, json } = createReqRes({
+      const { req, res, status } = createReqRes({
         body: { name: 'x'.repeat(256) },
       });
 
@@ -399,18 +399,18 @@ describe('createAdminGroupsHandlers', () => {
       expect(deps.createGroup).not.toHaveBeenCalled();
     });
 
-    it('passes non-ObjectId memberIds through unchanged', async () => {
+    it('filters out non-ObjectId strings from memberIds at create time', async () => {
       const deps = createDeps();
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status } = createReqRes({
-        body: { name: 'Ext Group', memberIds: ['ext-1', 'ext-2'] },
+        body: { name: 'Local Group', memberIds: ['ext-1', 'ext-2'] },
       });
 
       await handlers.createGroup(req, res);
 
       expect(deps.findUsers).not.toHaveBeenCalled();
       expect(deps.createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ memberIds: ['ext-1', 'ext-2'] }),
+        expect.objectContaining({ memberIds: [] }),
       );
       expect(status).toHaveBeenCalledWith(201);
     });
@@ -594,13 +594,13 @@ describe('createAdminGroupsHandlers', () => {
       const handlers = createAdminGroupsHandlers(deps);
       const { req, res, status, json } = createReqRes({
         params: { id: validId },
-        body: { name: 'a'.repeat(501) },
+        body: { name: 'a'.repeat(256) },
       });
 
       await handlers.updateGroup(req, res);
 
       expect(status).toHaveBeenCalledWith(400);
-      expect(json).toHaveBeenCalledWith({ error: 'name must not exceed 500 characters' });
+      expect(json).toHaveBeenCalledWith({ error: 'name must not exceed 255 characters' });
       expect(deps.updateGroupById).not.toHaveBeenCalled();
     });
 

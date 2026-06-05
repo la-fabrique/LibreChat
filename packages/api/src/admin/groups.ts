@@ -17,10 +17,10 @@ import { parsePagination } from './pagination';
 
 type GroupListFilter = Pick<GroupFilterOptions, 'source' | 'search'>;
 
-const VALID_GROUP_SOURCES: ReadonlySet<string> = new Set(['local', 'entra']);
+const VALID_GROUP_SOURCES: ReadonlySet<string> = new Set(['local']);
 const MAX_CREATE_MEMBER_IDS = 500;
 const MAX_SEARCH_LENGTH = 200;
-const MAX_NAME_LENGTH = 500;
+const MAX_NAME_LENGTH = 255;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_EMAIL_LENGTH = 500;
 const MAX_AVATAR_LENGTH = 2000;
@@ -179,7 +179,6 @@ export function createAdminGroupsHandlers(deps: AdminGroupsDeps) {
           .status(400)
           .json({ error: `memberIds must not exceed ${MAX_CREATE_MEMBER_IDS} entries` });
       }
-      const memberIds = rawIds.filter(isValidObjectIdString);
 
       const group = await createGroup({
         name: body.name.trim(),
@@ -187,7 +186,7 @@ export function createAdminGroupsHandlers(deps: AdminGroupsDeps) {
         email: body.email,
         avatar: body.avatar,
         source: 'local',
-        memberIds,
+        memberIds: rawIds.filter(isValidObjectIdString),
       });
       return res.status(201).json({ group });
     } catch (error) {
