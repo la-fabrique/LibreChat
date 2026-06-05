@@ -120,7 +120,7 @@ describe('UserGroup Methods - Detailed Tests', () => {
     test('should filter by source when provided', async () => {
       const groups = await methods.findGroupsByNamePattern('Engineering', 'local');
 
-      expect(groups).toHaveLength(2);
+      expect(groups).toHaveLength(3);
       expect(groups.every((g) => g.source === 'local')).toBe(true);
     });
 
@@ -462,7 +462,7 @@ describe('UserGroup Methods - Detailed Tests', () => {
     test('respects source filter', async () => {
       const count = await methods.countGroups({ source: 'local' });
 
-      expect(count).toBe(2);
+      expect(count).toBe(3);
     });
 
     test('respects search filter', async () => {

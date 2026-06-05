@@ -80,6 +80,7 @@ describe('userGroup methods', () => {
     beforeEach(async () => {
       await Group.create([
         { name: 'Engineering', source: 'local', description: 'Eng team' },
+        { name: 'Engine Room', source: 'local' },
         { name: 'Design', source: 'local', email: 'design@co.com' },
         { name: 'Literal .* Group', source: 'local' },
       ]);
@@ -110,8 +111,8 @@ describe('userGroup methods', () => {
 
     it('filters by source when provided', async () => {
       const results = await methods.findGroupsByNamePattern('eng', 'local');
-      expect(results).toHaveLength(1);
-      expect(results[0].source).toBe('local');
+      expect(results).toHaveLength(2);
+      expect(results.every((g) => g.source === 'local')).toBe(true);
     });
 
     it('respects limit parameter', async () => {
