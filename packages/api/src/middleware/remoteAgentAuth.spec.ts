@@ -87,7 +87,6 @@ type FindUserCondition = {
   email?: FindUserValue;
   openidId?: FindUserValue;
   openidIssuer?: FindUserValue;
-  idOnTheSource?: FindUserValue;
   $or?: FindUserCondition[];
 };
 type FindUserQuery = FindUserCondition & { $or?: FindUserCondition[] };
@@ -191,12 +190,6 @@ function matchesCondition(user: IUser, condition: FindUserCondition): boolean {
   if (
     condition.openidIssuer !== undefined &&
     !matchesValue(user.openidIssuer, condition.openidIssuer)
-  ) {
-    return false;
-  }
-  if (
-    condition.idOnTheSource !== undefined &&
-    !matchesValue(user.idOnTheSource, condition.idOnTheSource)
   ) {
     return false;
   }

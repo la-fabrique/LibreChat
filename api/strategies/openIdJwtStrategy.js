@@ -105,7 +105,6 @@ const openIdJwtLogin = (openIdConfig) => {
           email: payload ? getOpenIdEmail(payload) : undefined,
           openidId: payload?.sub,
           openidIssuer,
-          idOnTheSource: payload?.oid,
           strategyName: 'openIdJwtLogin',
         });
 
