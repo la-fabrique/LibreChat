@@ -263,18 +263,17 @@ const CODE_EDIT_FILE_PARAMETERS: LCTool['parameters'] = Object.freeze({
 
 const SKILL_CREATE_FILE_DESCRIPTION = `Create a new file, or overwrite an existing file with explicit intent.
 
-Use for new files and full rewrites. Requires overwrite: true to replace existing files.
+Use for new files and full rewrites where the change is larger than half the file. Requires overwrite: true to replace existing files. Refuses otherwise.
 
-Paths starting with "skills/" write skill files:
-- skills/{skillName}/SKILL.md - main instructions; keep it lean with YAML frontmatter, trigger-friendly description, workflow steps, and short snippets.
-- skills/{skillName}/references/{file} - long docs, schemas, examples, large templates, HTML/CSS/JS dashboards.
-- skills/{skillName}/scripts/{file} - helper scripts.
-- skills/{skillName}/assets/{file} - static assets.
-- skills/{skillName}/templates/{file} - reusable output templates.
+Paths starting with "skills/" target the skill file system:
+- skills/{skillName}/SKILL.md - the skill's main instruction file
+- skills/{skillName}/references/{file} - supporting reference files
+- skills/{skillName}/scripts/{file} - helper scripts
+- skills/{skillName}/templates/{file} - output templates
 
-For SKILL.md, frontmatter name must match {skillName}; create skills/{newName}/SKILL.md to rename. Put large runnable artifacts in bundled files such as references/template.html, and have SKILL.md tell the agent when to read or reuse them.
+For skills/{skillName}/SKILL.md, YAML frontmatter name must match {skillName}. To use a different skill name, create a new skills/{newName}/SKILL.md instead.
 
-Non-skills paths target the code-execution sandbox when enabled. Prefer /mnt/data/{file}.`;
+When code execution is enabled, non-skills paths target the code-execution sandbox. Prefer /mnt/data/{file} for files that should remain available to later sandbox calls.`;
 
 const CODE_CREATE_FILE_DESCRIPTION = `Create a new file, or overwrite an existing file with explicit intent.
 
@@ -286,7 +285,7 @@ const SKILL_EDIT_FILE_DESCRIPTION = `Apply targeted text replacements to an exis
 
 Use for small, precise changes. Each old_text must match exactly one location. Tries exact match first; falls back to whitespace-tolerant matching if needed. Reports which matching strategy was used. Returns a unified diff.
 
-For skills/{skillName}/SKILL.md, edit description, title, or body content, but keep YAML frontmatter name equal to {skillName}. edit_file cannot rename skills; create a new skills/{newName}/SKILL.md for a different skill name. Keep SKILL.md concise; move large templates, HTML/CSS/JS dashboards, examples, schemas, and long docs into references/, scripts/, assets/, or templates/ files and point to them from SKILL.md.
+For skills/{skillName}/SKILL.md, edit description, title, or body content, but keep YAML frontmatter name equal to {skillName}. edit_file cannot rename skills; create a new skills/{newName}/SKILL.md for a different skill name.
 
 Paths starting with "skills/" target the skill file system. When code execution is enabled, non-skills paths target the code-execution sandbox.`;
 
